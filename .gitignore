@@ -1,0 +1,7 @@
+
+# all build executables and artifacts
+/build
+
+# more build artifacts
+**.o
+
