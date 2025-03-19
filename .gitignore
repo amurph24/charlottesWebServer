@@ -1,6 +1,6 @@
 
 # all build executables and artifacts
-/build
+/build/*
 
 # more build artifacts
 **.o
