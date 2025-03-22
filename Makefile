@@ -9,7 +9,7 @@ TESTDIR=test
 
 
 server:
-	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -o $(BUILDDIR)/$@
+	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -I $(INCLUDEDIR) -o $(BUILDDIR)/$@
 
 test: FORCE
 	./build/server
