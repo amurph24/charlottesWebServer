@@ -12,7 +12,7 @@ server:
 	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -I $(INCLUDEDIR) -o $(BUILDDIR)/$@
 
 test: FORCE
-	./build/server
+	./build/server 8000
 quickstart:
 	mkdir -p $(BUILDDIR) $(SOURCEDIR) $(INCLUDEDIR) $(TESTDIR)
 	touch $(SOURCEDIR)/main.c

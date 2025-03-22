@@ -5,12 +5,11 @@
 #include <arpa/inet.h>
 
 //TODO: move to a header file, or fetch from user or system
-#define PORT 8000
 #define IP "10.0.0.180"
 #define QUEUE_LIMIT 20
 
-int launch_server() {
-	printf("configuring socket %s:%d...\n", IP, PORT);
+int launch_server(int port) {
+	printf("configuring socket %s:%d...\n", IP, port);
 	struct sockaddr_in server_sock_addr;
 	struct in_addr server_ip_addr;
 
@@ -28,7 +27,7 @@ int launch_server() {
 
 	// configure server address for socket
 	server_sock_addr.sin_family = AF_INET;
-	server_sock_addr.sin_port = htons(PORT);
+	server_sock_addr.sin_port = htons(port);
 	server_sock_addr.sin_addr = server_ip_addr;
 
 	// connect socket to server and start listening
@@ -41,7 +40,7 @@ int launch_server() {
 		return 1;
 	}
 
-	printf("success! Listening on port %d...", PORT);
+	printf("success! Listening on port %d...", port);
 	while (1) {
 	
 	}
