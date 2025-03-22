@@ -11,7 +11,7 @@ TESTDIR=test
 server:
 	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -I $(INCLUDEDIR) -o $(BUILDDIR)/$@
 
-test: FORCE
+test: server FORCE
 	./build/server 8000
 quickstart:
 	mkdir -p $(BUILDDIR) $(SOURCEDIR) $(INCLUDEDIR) $(TESTDIR)
