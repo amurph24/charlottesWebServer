@@ -10,7 +10,8 @@ $(EXE):
 	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -I $(INCLUDEDIR) -o $(BUILDDIR)/$@
 
 test: $(EXE) FORCE
-	./$(BUILDDIR)/$(EXE) 8000
+	cp $(BUILDDIR)/$(EXE) $(TESTDIR)
+	./$(TESTDIR)/$(EXE) 8000
 quickstart:
 	mkdir -p $(BUILDDIR) $(SOURCEDIR) $(INCLUDEDIR) $(TESTDIR)
 	touch $(SOURCEDIR)/main.c
