@@ -10,13 +10,60 @@
 #define IP "10.0.0.180"
 #define QUEUE_LIMIT 20
 
+int validate_request() {
+	//TODO
+	return 0;
+}
+
+char* extract_resource(char* request_string) {
+	char* resource_name;
+	resource_name = strtok(request_string, " ");
+	resource_name = strtok(NULL, " ");
+	return resource_name;
+}
+
+#include <stdlib.h>
+#define REQUEST_BUFFER_LEN 4096
+int handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
+	uint8_t return_buff[4096+1];
+	char* request_buffer = (char*)malloc(REQUEST_BUFFER_LEN*(sizeof(char)));
+
+	recv(sockfd, request_buffer, REQUEST_BUFFER_LEN, 0); //TODO: replace 0 with MSG_WAITALL -> requires handshake
+	if (validate_request() < 0) {
+		printf("received bad request, exiting\n");
+		//TODO: give the user some sort of response
+		return 1;
+	}
+	printf("request: %s\n", request_buffer);
+
+	// parse request
+	char* request_buffer_copy = (char*)malloc(4096*sizeof(char));
+	strcpy(request_buffer_copy, request_buffer);
+	char* resource_name_str = extract_resource(request_buffer_copy);
+	printf("requested resource: %s \n", resource_name_str);
+	free(request_buffer_copy);
+
+	char* ip_addr = inet_ntoa(sock_addr.sin_addr);
+	printf("requester ip: %s\n", ip_addr);
+	printf("addr length: %d\n", sock_addr_len);
+	
+	// assemble and return response
+	snprintf((char*)return_buff, sizeof(return_buff), "HTTP/1.0 200 OK\r\n\r\nHello");
+	if (write(sockfd, (char*)return_buff, strlen((char*)return_buff)) < 0) {
+		printf("failed to write to %s", ip_addr);
+		return 1;
+	}
+
+	free(request_buffer);
+	return 0;
+}
+
 int launch_server(int port) {
 	printf("configuring socket %s:%d...\n", IP, port);
 	struct sockaddr_in server_sock_addr;
 	struct in_addr server_ip_addr;
 	int server_sock, conn_sock;
 
-	uint8_t buff[4096+1];
 
 	server_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_sock < 0) {
@@ -59,12 +106,7 @@ int launch_server(int port) {
 			return 1; // maybe this should be a continue?
 		}
 
-		char* ip_addr = inet_ntoa(req_sock_addr.sin_addr);
-		printf("requester ip: %s\n", ip_addr);
-		
-		snprintf((char*)buff, sizeof(buff), "HTTP/1.0 200 OK\r\n\r\nHello");
-
-		write(conn_sock, (char*)buff, strlen((char*)buff));
+		handle_request(conn_sock, req_sock_addr, req_addr_len);
 		close(conn_sock);
 	}
 	return 0;
