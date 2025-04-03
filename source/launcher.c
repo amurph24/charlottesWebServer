@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 //TODO: move to a header file, or fetch from user or system
-#define IP "10.0.0.180"
+#define IP "10.43.156.42"
 #define QUEUE_LIMIT 20
 
 int validate_request() {
@@ -50,6 +51,7 @@ int handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr
 	// assemble and return response
 	snprintf((char*)return_buff, sizeof(return_buff), "HTTP/1.0 200 OK\r\n\r\nHello");
 	if (write(sockfd, (char*)return_buff, strlen((char*)return_buff)) < 0) {
+		perror("failed to communicate");
 		printf("failed to write to %s", ip_addr);
 		return 1;
 	}
@@ -67,13 +69,13 @@ int launch_server(int port) {
 
 	server_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_sock < 0) {
-		printf("failed to instatiate listener server socket\n");
+		perror("failed to instatiate listener server socket\n");
 		return 1;
 	}
 
 	// convert IP from string to server order format
 	if (!inet_aton(IP, &server_ip_addr)) {
-		printf("invalid IP address provided for listener\n");
+		perror("invalid IP address provided for listener\n");
 		return 1;
 	}
 
@@ -84,11 +86,11 @@ int launch_server(int port) {
 
 	// connect socket to server and start listening
 	if (bind(server_sock, (struct sockaddr *) &server_sock_addr, sizeof(server_sock_addr)) < 0) {
-		printf("failed to bind socket to server address\n");
+		perror("failed to bind socket to server address\n");
 		return 1;
 	}
 	if (listen(server_sock, QUEUE_LIMIT)) {
-		printf("failed to listen on server socket\n");
+		perror("failed to listen on server socket\n");
 		return 1;
 	}
 
@@ -102,7 +104,7 @@ int launch_server(int port) {
 		fflush(stdout);	
 		conn_sock = accept(server_sock, (struct sockaddr *) &req_sock_addr, &req_addr_len);
 		if (conn_sock < 0) {
-			printf("failed to connect with requester\n");
+			perror("failed to connect with requester\n");
 			return 1; // maybe this should be a continue?
 		}
 
