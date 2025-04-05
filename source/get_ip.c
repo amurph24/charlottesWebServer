@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "common.h"
+#include "get_ip.h"
 
 #define INTERFACE "wlp3s0"
 
@@ -17,10 +19,8 @@ char* get_self_ip(char* host)
     struct ifaddrs *ifaddr, *ifa;
     int family, s;
 
-    if (getifaddrs(&ifaddr) == -1) {
-        perror("getifaddrs");
-        exit(EXIT_FAILURE);
-    }
+    if (getifaddrs(&ifaddr) == -1)
+	error_and_die("ifaddrs");
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         family = ifa->ifa_addr->sa_family;
@@ -38,11 +38,4 @@ char* get_self_ip(char* host)
     }
     freeifaddrs(ifaddr);
     return host;
-}
-
-int main () {
-	char host[NI_MAXHOST];
-	get_self_ip(host);
-	printf("host ip: %s\n", host);
-	return 0;
 }
