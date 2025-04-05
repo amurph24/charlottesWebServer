@@ -18,4 +18,5 @@ quickstart:
 FORCE:
 
 kill:
-	pkill -f "./$(BUILDDIR)/$(EXE) 8000"
+	-pkill -f "./$(BUILDDIR)/$(EXE) 8000"
+	-pkill -f "./$(TESTDIR)/$(EXE) 8000"
