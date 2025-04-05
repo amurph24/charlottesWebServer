@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 
 #include "common.h"
+#include "launcher.h"
 
 //TODO: move to a header file, or fetch from user or system
 #define IP "209.52.108.102"
