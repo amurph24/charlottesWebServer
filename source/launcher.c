@@ -7,8 +7,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "common.h"
+
 //TODO: move to a header file, or fetch from user or system
-#define IP "10.43.156.42"
+#define IP "209.52.108.102"
 #define QUEUE_LIMIT 20
 
 int validate_request() {
@@ -68,16 +70,12 @@ int launch_server(int port) {
 
 
 	server_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_sock < 0) {
-		perror("failed to instatiate listener server socket\n");
-		return 1;
-	}
+	if (server_sock < 0)
+		error_and_die("couldn't initialise listener socket\n");
 
 	// convert IP from string to server order format
-	if (!inet_aton(IP, &server_ip_addr)) {
-		perror("invalid IP address provided for listener\n");
-		return 1;
-	}
+	if (!inet_aton(IP, &server_ip_addr))
+		error_and_die("invalid ip address\n");
 
 	// configure server address for socket
 	server_sock_addr.sin_family = AF_INET;
@@ -85,14 +83,10 @@ int launch_server(int port) {
 	server_sock_addr.sin_addr = server_ip_addr;
 
 	// connect socket to server and start listening
-	if (bind(server_sock, (struct sockaddr *) &server_sock_addr, sizeof(server_sock_addr)) < 0) {
-		perror("failed to bind socket to server address\n");
-		return 1;
-	}
-	if (listen(server_sock, QUEUE_LIMIT)) {
-		perror("failed to listen on server socket\n");
-		return 1;
-	}
+	if (bind(server_sock, (struct sockaddr *) &server_sock_addr, sizeof(server_sock_addr)) < 0)
+		error_and_die("failed to bind socket to server address\n");
+	if (listen(server_sock, QUEUE_LIMIT))
+		error_and_die("failed to listen on server socket\n");
 
 	printf("success! Listening on port %d...\n", port);
 	while (1) {
@@ -105,7 +99,7 @@ int launch_server(int port) {
 		conn_sock = accept(server_sock, (struct sockaddr *) &req_sock_addr, &req_addr_len);
 		if (conn_sock < 0) {
 			perror("failed to connect with requester\n");
-			return 1; // maybe this should be a continue?
+			continue;
 		}
 
 		handle_request(conn_sock, req_sock_addr, req_addr_len);
