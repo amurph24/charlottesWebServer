@@ -2,10 +2,13 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <ifaddrs.h>
 
 #include "common.h"
 #include "launcher.h"
@@ -14,7 +17,35 @@
 //TODO: move to a header file, or fetch from user or system
 #define IP "10.0.0.180"
 #define QUEUE_LIMIT 20
+#define INTERFACE "wlp3s0"
 
+// caller must initialise host to contain ip address object
+// suggest using size NI_MAXHOST
+char* get_self_ip(char* host)
+{
+    struct ifaddrs *ifaddr, *ifa;
+    int family, s;
+
+    if (getifaddrs(&ifaddr) == -1)
+	error_and_die("ifaddrs");
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_INET) {
+            s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+                                           host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+            if (s != 0) {
+                printf("getnameinfo() failed: %s\n", gai_strerror(s));
+		freeifaddrs(ifaddr);
+                exit(EXIT_FAILURE);
+            }
+	    if (strcmp(ifa->ifa_name, INTERFACE)) continue;
+        }
+    }
+    freeifaddrs(ifaddr);
+    return host;
+}
 
 int launch_server(int port) {
 	printf("configuring socket %s:%d...\n", IP, port);
