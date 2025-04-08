@@ -4,7 +4,7 @@ HTTP web server!
 ## TODO
 not necessarily in this order:
  - [ ] more complete arg parsing
-   - [ ] add ip as optional arg (default should get current ip)
+   - [x] ~~add ip as optional arg~~ (default should get current ip)
    - [ ] error checking on passed args
    - [ ] help message/usage
  - [ ] limit request resources to those in "html" folder

@@ -15,19 +15,20 @@
 #include "cw_server.h"
 
 //TODO: move to a header file, or fetch from user or system
-#define IP "10.0.0.180"
 #define QUEUE_LIMIT 20
 #define INTERFACE "wlp3s0"
 
 // caller must initialise host to contain ip address object
 // suggest using size NI_MAXHOST
-char* get_self_ip(char* host)
+int get_self_ip(char* host)
 {
     struct ifaddrs *ifaddr, *ifa;
     int family, s;
 
-    if (getifaddrs(&ifaddr) == -1)
-	error_and_die("ifaddrs");
+    if (getifaddrs(&ifaddr) == -1) {
+	perror("getifaddrs failed");
+	return -1;
+    }
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         family = ifa->ifa_addr->sa_family;
@@ -36,19 +37,22 @@ char* get_self_ip(char* host)
             s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
                                            host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
             if (s != 0) {
+	        freeifaddrs(ifaddr);
                 printf("getnameinfo() failed: %s\n", gai_strerror(s));
-		freeifaddrs(ifaddr);
-                exit(EXIT_FAILURE);
+		return -1;
             }
-	    if (strcmp(ifa->ifa_name, INTERFACE)) continue;
+	    if (!strcmp(ifa->ifa_name, INTERFACE)) break;
         }
     }
     freeifaddrs(ifaddr);
-    return host;
+    return 0;
 }
 
 int launch_server(int port) {
-	printf("configuring socket %s:%d...\n", IP, port);
+	char host_ip[NI_MAXHOST] = {0};
+	if (get_self_ip(host_ip) == -1)
+		error_and_die("couldn't get self ip address");
+	printf("configuring socket %s:%d...\n", host_ip, port);
 	struct sockaddr_in server_sock_addr;
 	struct in_addr server_ip_addr;
 	int server_sock, conn_sock;
@@ -59,7 +63,7 @@ int launch_server(int port) {
 		error_and_die("couldn't initialise listener socket\n");
 
 	// convert IP from string to server order format
-	if (!inet_aton(IP, &server_ip_addr))
+	if (!inet_aton(host_ip, &server_ip_addr))
 		error_and_die("invalid ip address\n");
 
 	// configure server address for socket
