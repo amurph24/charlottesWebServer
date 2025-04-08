@@ -43,6 +43,13 @@ int launch_server(int port) {
 		error_and_die("failed to listen on server socket\n");
 
 	printf("success! Listening on port %d...\n", port);
+
+	// handlers for special ports
+	int (*handle_request)(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len);
+	switch (port) {
+		//case 7: handle_request = echo_handle_request;
+		default: handle_request = cw_handle_request;
+	}
 	while (1) {
 		// details of requesters
 		struct sockaddr_in req_sock_addr;

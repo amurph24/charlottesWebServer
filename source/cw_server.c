@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -8,6 +9,7 @@
 #include "common.h"
 #include "cw_server.h"
 
+#define REQUEST_BUFFER_LEN 4096
 
 int _validate_request() {
 	//TODO
@@ -21,9 +23,7 @@ char* _extract_resource(char* request_string) {
 	return resource_name;
 }
 
-#include <stdlib.h>
-#define REQUEST_BUFFER_LEN 4096
-int handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
+int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
 	uint8_t return_buff[4096+1];
 	char* request_buffer = (char*)malloc(REQUEST_BUFFER_LEN*(sizeof(char)));
 
