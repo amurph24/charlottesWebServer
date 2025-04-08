@@ -4,17 +4,23 @@ SOURCEDIR=source
 BUILDDIR=build
 INCLUDEDIR=include
 TESTDIR=test
+
+# all .c files should be compiled into .o files
+SOURCEFILES = $(shell find $(SOURCEDIR) -name *.c)
+OBJFILES = $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(SOURCEFILES)))
 EXE=server
 
-$(EXE):
-	$(CC) $(FLAGS) $(SOURCEDIR)/*.c -I $(INCLUDEDIR) -o $(BUILDDIR)/$@
+$(EXE): $(BUILDDIR)/$(EXE)
+$(BUILDDIR)/$(EXE): $(OBJFILES)
+	$(CC) $(CCFLAGS) -o $@ $^
 
-test: $(EXE) FORCE
+$(OBJFILES): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
+	$(CC) $(CCFLAGS) -I $(INCLUDEDIR) -c $< -o $@
+
+test: $(EXE)
 	cp $(BUILDDIR)/$(EXE) $(TESTDIR)
 	./$(TESTDIR)/$(EXE) 8000
-quickstart:
-	mkdir -p $(BUILDDIR) $(SOURCEDIR) $(INCLUDEDIR) $(TESTDIR)
-	touch $(SOURCEDIR)/main.c
+
 FORCE:
 
 kill:
