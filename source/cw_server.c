@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 
 #include "common.h"
@@ -25,19 +26,24 @@ char* _extract_resource(char* request_string) {
 
 int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
 	uint8_t return_buff[4096+1];
+	ssize_t num_bytes_received;
 	char* request_buffer = (char*)malloc(REQUEST_BUFFER_LEN*(sizeof(char)));
 
-	recv(sockfd, request_buffer, REQUEST_BUFFER_LEN, 0); //TODO: replace 0 with MSG_WAITALL -> requires handshake
+	num_bytes_received = recv(sockfd, request_buffer, REQUEST_BUFFER_LEN, 0);
+	if (num_bytes_received < 0) {
+		perror("couldn't receive bytes from client\n");
+		return -1;
+	}
 	if (_validate_request() < 0) {
 		printf("received bad request, exiting\n");
 		//TODO: give the user some sort of response
-		return 1;
+		return -1;
 	}
 	printf("request: %s\n", request_buffer);
 
 	// parse request
-	char* request_buffer_copy = (char*)malloc(4096*sizeof(char));
-	strcpy(request_buffer_copy, request_buffer);
+	char* request_buffer_copy = (char*)malloc(REQUEST_BUFFER_LEN*sizeof(char));
+	strncpy(request_buffer_copy, request_buffer, REQUEST_BUFFER_LEN*sizeof(char));
 	char* resource_name_str = _extract_resource(request_buffer_copy);
 	printf("requested resource: %s \n", resource_name_str);
 	free(request_buffer_copy);
