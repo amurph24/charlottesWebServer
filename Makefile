@@ -8,7 +8,7 @@ TESTDIR=test
 # all .c files should be compiled into .o files
 SOURCEFILES = $(shell find $(SOURCEDIR) -name *.c)
 OBJFILES = $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(SOURCEFILES)))
-EXE=server
+EXE=cwserver
 
 $(EXE): $(BUILDDIR)/$(EXE)
 $(BUILDDIR)/$(EXE): $(OBJFILES)
@@ -18,8 +18,7 @@ $(OBJFILES): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
 	$(CC) $(CCFLAGS) -I $(INCLUDEDIR) -c $< -o $@
 
 test: $(EXE)
-	cp $(BUILDDIR)/$(EXE) $(TESTDIR)
-	./$(TESTDIR)/$(EXE) 8000
+	./$(BUILDDIR)/$(EXE) 8000
 
 FORCE:
 
