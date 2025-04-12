@@ -27,6 +27,9 @@ char* _extract_resource(char* request_string) {
 
 int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
 	char *return_buff = (char*)malloc(RESPONSE_BUFFER_LEN*sizeof(char));
+	if (return_buff == NULL)
+		goto cleanup_cw_handle_request;
+
 	ssize_t num_bytes_received;
 	char request_buffer[REQUEST_BUFFER_LEN] = {0};
 
