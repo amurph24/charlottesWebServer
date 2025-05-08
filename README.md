@@ -8,6 +8,7 @@ not necessarily in this order:
    - [x] error checking on passed args
    - [x] help message/usage
  - [ ] limit request resources to those in "html" folder
+   - [x] return requested files
    - [ ] no requested resource should default to "index.html"
  - [ ] safety checks on buffers
  - [x] smarter compilation in makefile (file by file, instead of all files always)

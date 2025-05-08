@@ -2,16 +2,40 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 
 #include "common.h"
 #include "cw_server.h"
 
 #define REQUEST_BUFFER_LEN 4096
-#define RESPONSE_BUFFER_LEN 5242880
+#define RESPONSE_BUFFER_LEN 242880
+
+const char *_get_file_extension(const char *file_name) {
+    const char *dot = strrchr(file_name, '.');
+    if (!dot || dot == file_name) {
+        return "";
+    }
+    return dot + 1;
+}
+
+const char *_get_mime_type(const char *file_ext) {
+    if (strcasecmp(file_ext, "html") == 0 || strcasecmp(file_ext, "htm") == 0) {
+        return "text/html";
+    } else if (strcasecmp(file_ext, "txt") == 0) {
+        return "text/plain";
+    } else if (strcasecmp(file_ext, "jpg") == 0 || strcasecmp(file_ext, "jpeg") == 0) {
+        return "image/jpeg";
+    } else if (strcasecmp(file_ext, "png") == 0) {
+        return "image/png";
+    } else {
+        return "application/octet-stream";
+    }
+}
 
 int _validate_request() {
 	//TODO
@@ -25,10 +49,64 @@ char* _extract_resource(char* request_string) {
 	return resource_name;
 }
 
+int build_http_response(const char *file_name, 
+                        char *response, 
+                        size_t *response_len) {
+	// build HTTP header
+	const char *mime_type = _get_mime_type(_get_file_extension(file_name));
+	char *header = (char *)malloc(RESPONSE_BUFFER_LEN * sizeof(char));
+	if (header == NULL) {
+		perror("failed to allocated header, returning");
+		return -1;
+	}
+
+	snprintf(header, RESPONSE_BUFFER_LEN,
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Type: %s\r\n"
+             "\r\n",
+             mime_type);
+
+	// file doesn't exist, response is 404 Not Found
+	int file_fd = open(file_name, O_RDONLY);
+	if (file_fd == -1) {
+		snprintf(response, RESPONSE_BUFFER_LEN,
+                 "HTTP/1.1 404 Not Found\r\n"
+                 "Content-Type: text/plain\r\n"
+                 "\r\n"
+                 "404 Not Found");
+		*response_len = strlen(response);
+		goto build_http_free_header;
+	}
+
+	// get file size for Content-Length
+	struct stat file_stat;
+	fstat(file_fd, &file_stat);
+
+	// copy header to response buffer
+	*response_len = 0;
+	memcpy(response, header, strlen(header));
+	*response_len += strlen(header);
+
+	// copy file to response buffer
+	ssize_t bytes_read;
+	while ((bytes_read = read(file_fd, 
+                            response + *response_len, 
+                            RESPONSE_BUFFER_LEN - *response_len)) > 0) {
+		*response_len += bytes_read;
+	}
+build_http_close_file:
+	close(file_fd);
+build_http_free_header:
+	free(header);
+	return 0;
+}
+
 int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
 	char *return_buff = (char*)malloc(RESPONSE_BUFFER_LEN*sizeof(char));
-	if (return_buff == NULL)
+	if (return_buff == NULL) {
+		perror("couldn't allocate reponse buffer");
 		goto cleanup_cw_handle_request;
+	}
 
 	ssize_t num_bytes_received;
 	char request_buffer[REQUEST_BUFFER_LEN] = {0};
@@ -43,7 +121,6 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_a
 		//TODO: give the user some sort of response
 		goto cleanup_cw_handle_request;
 	}
-	printf("request: %s\n", request_buffer);
 
 	// parse request
 	char request_buffer_copy[REQUEST_BUFFER_LEN] = {0};
@@ -56,11 +133,15 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_a
 	printf("addr length: %d\n", sock_addr_len);
 	
 	// assemble and return response
-	snprintf(return_buff, RESPONSE_BUFFER_LEN*sizeof(char), "HTTP/1.0 200 OK\r\n\r\nHello");
+	size_t response_len = RESPONSE_BUFFER_LEN*sizeof(char);
+	if (build_http_response(resource_name_str+1, return_buff, &response_len) < 0) {
+		perror("couldn't build response");
+		goto cleanup_cw_handle_request;
+	}
 	if (write(sockfd, return_buff, strlen(return_buff)) < 0) {
 		perror("failed to communicate");
 		printf("failed to write to %s", ip_addr);
-		return 1;
+		goto cleanup_cw_handle_request;
 	}
 
 cleanup_cw_handle_request:
