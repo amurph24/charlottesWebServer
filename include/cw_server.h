@@ -3,6 +3,7 @@
 
 #include <sys/socket.h>
 
-int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len);
+int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
+                      socklen_t sock_addr_len);
 
 #endif

@@ -4,6 +4,6 @@
 #include "common.h"
 
 void error_and_die(char *message) {
-	perror(message);
-	exit(1);
+  perror(message);
+  exit(1);
 }

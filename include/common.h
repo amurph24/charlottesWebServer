@@ -3,6 +3,6 @@
 
 #include <errno.h>
 
-void error_and_die(char*);
+void error_and_die(char *);
 
 #endif
