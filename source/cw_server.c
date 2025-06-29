@@ -15,6 +15,11 @@
 #define REQUEST_BUFFER_LEN 4096
 #define RESPONSE_BUFFER_LEN 242880
 
+#define UNSAFE -1
+#define SAFE 0
+
+#define DEFAULT_RESOURCE "index.html\0"
+
 const char *_get_file_extension(const char *file_name) {
     const char *dot = strrchr(file_name, '.');
     if (!dot || dot == file_name) {
@@ -40,6 +45,17 @@ const char *_get_mime_type(const char *file_ext) {
 int _validate_request() {
 	//TODO
 	return 0;
+}
+
+// check for nefarious resource requests, return -1 if suspicious
+int _check_resource(const char* resource_string) {
+	if (resource_string[0] == '/')
+		return UNSAFE;
+	if (strstr(resource_string,"/../") != NULL)
+     		return UNSAFE;
+	if (strstr(resource_string,"~/"))
+		return UNSAFE;
+	return SAFE;
 }
 
 char* _extract_resource(char* request_string) {
@@ -102,6 +118,10 @@ build_http_free_header:
 }
 
 int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_addr_len) {
+	char* ip_addr = inet_ntoa(sock_addr.sin_addr);
+	printf("requester ip: %s\n", ip_addr);
+	printf("addr length: %d\n", sock_addr_len);
+
 	char *return_buff = (char*)malloc(RESPONSE_BUFFER_LEN*sizeof(char));
 	if (return_buff == NULL) {
 		perror("couldn't allocate reponse buffer");
@@ -126,15 +146,23 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_a
 	char request_buffer_copy[REQUEST_BUFFER_LEN] = {0};
 	strncpy(request_buffer_copy, request_buffer, REQUEST_BUFFER_LEN*sizeof(char));
 	char* resource_name_str = _extract_resource(request_buffer_copy);
-	printf("requested resource: %s \n", resource_name_str);
 
-	char* ip_addr = inet_ntoa(sock_addr.sin_addr);
-	printf("requester ip: %s\n", ip_addr);
-	printf("addr length: %d\n", sock_addr_len);
+	// go to homepage if nothing requested
+	if (resource_name_str[0] == '/' && resource_name_str[1] == '\0')
+		resource_name_str = DEFAULT_RESOURCE;
+	else
+		resource_name_str++;
+
+	if (_check_resource(resource_name_str) != SAFE) {
+		printf("naughty request from '%s', ", ip_addr);
+		printf("%s\n", resource_name_str);
+		goto cleanup_cw_handle_request;
+	}
+
 	
 	// assemble and return response
 	size_t response_len = RESPONSE_BUFFER_LEN*sizeof(char);
-	if (build_http_response(resource_name_str+1, return_buff, &response_len) < 0) {
+	if (build_http_response(resource_name_str, return_buff, &response_len) < 0) {
 		perror("couldn't build response");
 		goto cleanup_cw_handle_request;
 	}
@@ -146,6 +174,7 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr, socklen_t sock_a
 
 cleanup_cw_handle_request:
 	free(return_buff);
+	printf("------\n");
 
 	return 0;
 }
