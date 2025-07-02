@@ -20,8 +20,8 @@
 
 #define DEFAULT_RESOURCE "index.html\0"
 
-const char *_get_file_extension(const char *file_name) {
-  const char *dot = strrchr(file_name, '.');
+char *_get_file_extension(const char *file_name) {
+  char *dot = strrchr(file_name, '.');
   if (!dot || dot == file_name) {
     return "";
   }

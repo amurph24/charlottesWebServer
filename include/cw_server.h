@@ -9,4 +9,8 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
 int echo_handle_request(int sockfd, struct sockaddr_in sock_addr,
                         socklen_t sock_addr_len);
 
+// for testing
+
+char *_get_file_extension(const char *file_name);
+
 #endif
