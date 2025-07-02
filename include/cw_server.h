@@ -1,6 +1,7 @@
 #ifndef CW_SERVER_H
 #define CW_SERVER_H
 
+#include <netinet/in.h>
 #include <sys/socket.h>
 
 int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
