@@ -79,7 +79,7 @@ int build_http_response(const char *file_name, char *response,
   snprintf(header, RESPONSE_BUFFER_LEN,
            "HTTP/1.1 200 OK\r\n"
            "Content-Type: %s\r\n"
-           "\r\n\0",
+           "\r\n",
            mime_type);
 
   // file doesn't exist, response is 404 Not Found
@@ -89,7 +89,7 @@ int build_http_response(const char *file_name, char *response,
              "HTTP/1.1 404 Not Found\r\n"
              "Content-Type: text/plain\r\n"
              "\r\n"
-             "404 Not Found\0");
+             "404 Not Found");
     *response_len = strlen(response);
     goto build_http_free_header;
   }
@@ -109,8 +109,10 @@ int build_http_response(const char *file_name, char *response,
                             RESPONSE_BUFFER_LEN - *response_len)) > 0) {
     *response_len += bytes_read;
   }
+  /*
 build_http_close_file:
   close(file_fd);
+  */
 build_http_free_header:
   free(header);
   return 0;
