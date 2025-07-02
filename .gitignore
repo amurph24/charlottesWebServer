@@ -1,6 +1,8 @@
 
 # all build executables and artifacts
-/build/*
+build/*.o
+build/cwserver
+build/test_cwserver
 
 # more build artifacts
 **.o
