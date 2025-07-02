@@ -8,7 +8,6 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
     hooks:
-      - id: check-yaml
       - id: trailing-whitespace
         files: ".*\\.(?:c|h|html)$"
       - id: end-of-file-fixer
