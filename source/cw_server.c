@@ -12,7 +12,7 @@
 #include "common.h"
 #include "cw_server.h"
 
-#define REQUEST_BUFFER_LEN 4096
+#define REQUEST_BUFFER_LEN 16384
 #define RESPONSE_BUFFER_LEN 242880
 
 #define UNSAFE -1
@@ -79,7 +79,7 @@ int build_http_response(const char *file_name, char *response,
   snprintf(header, RESPONSE_BUFFER_LEN,
            "HTTP/1.1 200 OK\r\n"
            "Content-Type: %s\r\n"
-           "\r\n",
+           "\r\n\0",
            mime_type);
 
   // file doesn't exist, response is 404 Not Found
@@ -89,7 +89,7 @@ int build_http_response(const char *file_name, char *response,
              "HTTP/1.1 404 Not Found\r\n"
              "Content-Type: text/plain\r\n"
              "\r\n"
-             "404 Not Found");
+             "404 Not Found\0");
     *response_len = strlen(response);
     goto build_http_free_header;
   }
@@ -125,17 +125,18 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
   char *return_buff = (char *)malloc(RESPONSE_BUFFER_LEN * sizeof(char));
   if (return_buff == NULL) {
     perror("couldn't allocate reponse buffer");
-    goto cleanup_cw_handle_request;
+    return -1;
   }
 
   ssize_t num_bytes_received;
   char request_buffer[REQUEST_BUFFER_LEN] = {0};
 
-  num_bytes_received = recv(sockfd, request_buffer, REQUEST_BUFFER_LEN, 0);
+  num_bytes_received = recv(sockfd, request_buffer, REQUEST_BUFFER_LEN - 1, 0);
   if (num_bytes_received < 0) {
     perror("couldn't receive bytes from client\n");
     goto cleanup_cw_handle_request;
   }
+  request_buffer[num_bytes_received] = '\0';
   if (_validate_request() < 0) {
     printf("received bad request, exiting\n");
     // TODO: give the user some sort of response
@@ -161,11 +162,13 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
   }
 
   // assemble and return response
-  size_t response_len = RESPONSE_BUFFER_LEN * sizeof(char);
+  size_t response_len = (RESPONSE_BUFFER_LEN - 1) * sizeof(char);
   if (build_http_response(resource_name_str, return_buff, &response_len) < 0) {
     perror("couldn't build response");
     goto cleanup_cw_handle_request;
   }
+  return_buff[response_len] = '\0';
+
   if (write(sockfd, return_buff, strlen(return_buff)) < 0) {
     perror("failed to communicate");
     printf("failed to write to %s", ip_addr);
@@ -174,6 +177,29 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
 
 cleanup_cw_handle_request:
   free(return_buff);
+  printf("------\n");
+
+  return 0;
+}
+
+int echo_handle_request(int sockfd, struct sockaddr_in sock_addr,
+                        socklen_t sock_addr_len) {
+  char *ip_addr = inet_ntoa(sock_addr.sin_addr);
+  printf("requester ip: %s\n", ip_addr);
+  printf("addr length: %d\n", sock_addr_len);
+
+  ssize_t num_bytes_received;
+  char request_buffer[REQUEST_BUFFER_LEN] = {0};
+
+  num_bytes_received = recv(sockfd, request_buffer, REQUEST_BUFFER_LEN - 1, 0);
+  if (num_bytes_received < 0) {
+    perror("couldn't receive bytes from client\n");
+  }
+  request_buffer[num_bytes_received] = '\0';
+  if (write(sockfd, request_buffer, strlen(request_buffer)) < 0) {
+    perror("failed to communicate");
+    printf("failed to write to %s", ip_addr);
+  }
   printf("------\n");
 
   return 0;

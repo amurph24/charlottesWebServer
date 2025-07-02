@@ -18,7 +18,7 @@ $(OBJFILES): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
 	$(CC) $(CCFLAGS) -I $(INCLUDEDIR) -c $< -o $@
 
 test: $(EXE)
-	./$(BUILDDIR)/$(EXE) 8000
+	valgrind -s ./$(BUILDDIR)/$(EXE) 8000
 
 FORCE:
 

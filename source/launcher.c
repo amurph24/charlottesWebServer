@@ -83,7 +83,9 @@ int launch_server(int port) {
   int (*handle_request)(int sockfd, struct sockaddr_in sock_addr,
                         socklen_t sock_addr_len);
   switch (port) {
-  // case 7: handle_request = echo_handle_request;
+  case 10007:
+    handle_request = echo_handle_request;
+    break;
   default:
     handle_request = cw_handle_request;
   }
