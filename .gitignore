@@ -7,3 +7,5 @@ build/test_cwserver
 # more build artifacts
 **.o
 
+# logs
+**.log

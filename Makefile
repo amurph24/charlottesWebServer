@@ -34,7 +34,7 @@ test: $(BUILDDIR)/test_$(EXE)
 
 
 run: $(EXE)
-	valgrind -s ./$(BUILDDIR)/$(EXE) 8000
+	valgrind -s ./$(BUILDDIR)/$(EXE) 8000 &
 
 FORCE:
 

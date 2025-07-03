@@ -16,7 +16,7 @@ not necessarily in this order:
    - [x] port 10007 will echo the HTTP request received
  - [ ] conform to HTTP 1.1 protocols
  - [ ] proper testing
-   - [ ] automated unit tests
-   - [ ] call and response with make test
-   - [ ] check for memory leaks
+   - [x] automated unit tests
+   - [ ] call and response with make test - need to verify file contents
+   - [x] check for memory leaks
  - [ ] threading

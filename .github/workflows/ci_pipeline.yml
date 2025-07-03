@@ -1,4 +1,4 @@
-name: Makefile CI
+name: CI
 
 on:
   push:
@@ -23,3 +23,5 @@ jobs:
 
       - name: unit tests
         run: make test
+      - name: valgrind test
+        run: ./test/valgrind_test.sh
