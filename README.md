@@ -12,7 +12,7 @@ not necessarily in this order:
    - [x] no requested resource should default to "index.html"
  - [ ] safety checks on buffers
  - [x] smarter compilation in makefile (file by file, instead of all files always)
- - [ ] special behaviour for certain ports
+ - [x] special behaviour for certain ports
    - [x] port 10007 will echo the HTTP request received
  - [ ] conform to HTTP 1.1 protocols
  - [ ] proper testing
