@@ -1,4 +1,4 @@
-#include "cw_server.h"
+#include "cw_server.h"  // SAFE, UNSAFE
 #include "test_utils.h" // PASS, FAIL
 #include <stdio.h>
 #include <string.h>
@@ -26,6 +26,36 @@ int test__get_file_extension() {
   // test files without extensions
   _get_file_extension_tester("something.", "", &outcome);
   _get_file_extension_tester("something", "", &outcome);
+
+  printf("\n");
+
+  return outcome;
+}
+
+void _check_resource_tester(char *resource_string, int permitted,
+                            int *outcome) {
+  if (_check_resource(resource_string) != permitted) {
+    printf("X");
+    printf("\nrequested resource '%s' hasn't been correctly flagged as "
+           "safe/unsafe.\n",
+           resource_string);
+    *outcome = FAIL;
+  } else {
+    printf(".");
+  }
+  return;
+}
+
+int test__check_resource() {
+  int outcome = PASS;
+  char *resource_var = "something.java";
+
+  _check_resource_tester("script.py", SAFE, &outcome);
+  _check_resource_tester(resource_var, SAFE, &outcome);
+
+  // test unsafe files
+  _check_resource_tester("../aunt_file.cpp", UNSAFE, &outcome);
+  _check_resource_tester("/lib/root.sh", UNSAFE, &outcome);
 
   printf("\n");
 

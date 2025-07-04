@@ -12,6 +12,10 @@ int main() {
     printf("test__get_file_extension failed\n");
     outcome = FAIL;
   }
+  if (test__check_resource() == FAIL) {
+    printf("test__check_resource failed\n");
+    outcome = FAIL;
+  }
 
   printf("=================================\n");
   printf("=================================\n");

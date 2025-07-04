@@ -17,9 +17,6 @@
 #define REQUEST_BUFFER_LEN 16384
 #define RESPONSE_BUFFER_LEN 242880
 
-#define UNSAFE -1
-#define SAFE 0
-
 #define DEFAULT_RESOURCE "index.html\0"
 
 char *_get_file_extension(const char *file_name) {
@@ -54,7 +51,7 @@ int _validate_request() {
 int _check_resource(const char *resource_string) {
   if (resource_string[0] == '/')
     return UNSAFE;
-  if (strstr(resource_string, "/../") != NULL)
+  if (strstr(resource_string, "../") != NULL)
     return UNSAFE;
   if (strstr(resource_string, "~/"))
     return UNSAFE;
