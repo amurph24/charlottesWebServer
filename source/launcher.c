@@ -90,16 +90,11 @@ int launch_server(int port) {
   default:
     handle_request = cw_handle_request;
   }
-  while (1) {
-    // details of requesters
-    struct sockaddr_in req_sock_addr;
-    socklen_t req_addr_len;
-    req_addr_len = sizeof(req_sock_addr);
 
+  while (1) {
     // TODO: I don't remember why this needs to be here
     fflush(stdout);
-    conn_sock =
-        accept(server_sock, (struct sockaddr *)&req_sock_addr, &req_addr_len);
+    conn_sock = accept(server_sock, NULL, NULL);
     if (conn_sock < 0) {
       perror("failed to connect with requester\n");
       continue;
