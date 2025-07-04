@@ -104,7 +104,6 @@ int launch_server(int port) {
     }
 
     handle_request(conn_sock, req_sock_addr, req_addr_len);
-    close(conn_sock);
   }
   close(server_sock);
   return 0;

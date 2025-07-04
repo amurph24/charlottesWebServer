@@ -127,7 +127,7 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
   char *return_buff = (char *)malloc(RESPONSE_BUFFER_LEN * sizeof(char));
   if (return_buff == NULL) {
     perror("couldn't allocate reponse buffer");
-    return -1;
+    goto close_conn;
   }
 
   ssize_t num_bytes_received;
@@ -179,8 +179,11 @@ int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
 
 cleanup_cw_handle_request:
   free(return_buff);
-  printf("------\n");
 
+close_conn:
+  close(sockfd);
+
+  printf("------\n");
   return 0;
 }
 
@@ -196,6 +199,8 @@ int echo_handle_request(int sockfd, struct sockaddr_in sock_addr,
   num_bytes_received = recv(sockfd, request_buffer, REQUEST_BUFFER_LEN - 1, 0);
   if (num_bytes_received < 0) {
     perror("couldn't receive bytes from client\n");
+    close(sockfd);
+    return -1;
   }
   request_buffer[num_bytes_received] = '\0';
   if (write(sockfd, request_buffer, strlen(request_buffer)) < 0) {
@@ -204,5 +209,6 @@ int echo_handle_request(int sockfd, struct sockaddr_in sock_addr,
   }
   printf("------\n");
 
+  close(sockfd);
   return 0;
 }
