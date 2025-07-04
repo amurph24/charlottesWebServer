@@ -118,7 +118,7 @@ build_http_free_header:
   return 0;
 }
 
-int cw_handle_request(int sockfd) {
+void *cw_handle_request(int sockfd) {
   // TODO : put this stuff in a separate function
   struct sockaddr_in sock_addr;
   socklen_t sock_addr_len;
@@ -191,10 +191,10 @@ close_conn:
   close(sockfd);
 
   printf("------\n");
-  return 0;
+  return NULL;
 }
 
-int echo_handle_request(int sockfd) {
+void *echo_handle_request(int sockfd) {
   // TODO : put this stuff in a separate function
   struct sockaddr_in sock_addr;
   socklen_t sock_addr_len;
@@ -213,7 +213,7 @@ int echo_handle_request(int sockfd) {
   if (num_bytes_received < 0) {
     perror("couldn't receive bytes from client\n");
     close(sockfd);
-    return -1;
+    return NULL;
   }
   request_buffer[num_bytes_received] = '\0';
   if (write(sockfd, request_buffer, strlen(request_buffer)) < 0) {
@@ -223,5 +223,5 @@ int echo_handle_request(int sockfd) {
   printf("------\n");
 
   close(sockfd);
-  return 0;
+  return NULL;
 }

@@ -80,7 +80,7 @@ int launch_server(int port) {
   printf("success! Listening on port %d...\n", port);
 
   // handlers for special ports
-  int (*handle_request)(int sockfd);
+  void *(*handle_request)(int sockfd);
   switch (port) {
   case 10007:
     handle_request = echo_handle_request;
