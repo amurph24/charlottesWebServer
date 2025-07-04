@@ -118,8 +118,15 @@ build_http_free_header:
   return 0;
 }
 
-int cw_handle_request(int sockfd, struct sockaddr_in sock_addr,
-                      socklen_t sock_addr_len) {
+int cw_handle_request(int sockfd) {
+  // TODO : put this stuff in a separate function
+  struct sockaddr_in sock_addr;
+  socklen_t sock_addr_len;
+  sock_addr_len = sizeof(sock_addr);
+
+  getpeername(sockfd, (struct sockaddr *)&sock_addr, &sock_addr_len);
+  //
+
   char *ip_addr = inet_ntoa(sock_addr.sin_addr);
   printf("requester ip: %s\n", ip_addr);
   printf("addr length: %d\n", sock_addr_len);
@@ -187,8 +194,14 @@ close_conn:
   return 0;
 }
 
-int echo_handle_request(int sockfd, struct sockaddr_in sock_addr,
-                        socklen_t sock_addr_len) {
+int echo_handle_request(int sockfd) {
+  // TODO : put this stuff in a separate function
+  struct sockaddr_in sock_addr;
+  socklen_t sock_addr_len;
+  sock_addr_len = sizeof(sock_addr);
+
+  getpeername(sockfd, (struct sockaddr *)&sock_addr, &sock_addr_len);
+  //
   char *ip_addr = inet_ntoa(sock_addr.sin_addr);
   printf("requester ip: %s\n", ip_addr);
   printf("addr length: %d\n", sock_addr_len);
