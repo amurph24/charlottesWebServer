@@ -19,4 +19,4 @@ not necessarily in this order:
    - [x] automated unit tests
    - [ ] call and response with make test - need to verify file contents
    - [x] check for memory leaks
- - [ ] threading
+ - [x] threading

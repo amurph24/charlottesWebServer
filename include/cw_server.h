@@ -4,9 +4,9 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-void *cw_handle_request(int sockfd);
+void *cw_handle_request(void *sockfd_pointer);
 
-void *echo_handle_request(int sockfd);
+void *echo_handle_request(void *sockfd_pointer);
 
 // for testing
 

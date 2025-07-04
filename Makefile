@@ -1,5 +1,6 @@
 CC=gcc
 CCFLAGS=-Wall -Wextra -Wpedantic -Werror
+LIBS=-lpthread
 SOURCEDIR=source
 BUILDDIR=build
 INCLUDEDIR=include
@@ -17,14 +18,14 @@ TESTOBJFILES = $(patsubst %.c, $(BUILDDIR)/%.o, $(notdir $(TESTFILES)))
 
 $(EXE): $(BUILDDIR)/$(EXE)
 $(BUILDDIR)/$(EXE): $(OBJFILES)
-	$(CC) $(CCFLAGS) -o $@ $^
+	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
 $(OBJFILES): $(BUILDDIR)/%.o: $(SOURCEDIR)/%.c
 	$(CC) $(CCFLAGS) -I $(INCLUDEDIR) -c $< -o $@
 
 
 $(BUILDDIR)/test_$(EXE): $(TESTOBJFILES) $(filter-out $(BUILDDIR)/main.o, $(OBJFILES))
-	$(CC) $(CCFLAGS) -o $@ $^
+	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
 $(TESTOBJFILES): $(BUILDDIR)/%.o: $(TESTDIR)/%.c
 	$(CC) $(CCFLAGS) -I $(INCLUDEDIR) -c $< -o $@

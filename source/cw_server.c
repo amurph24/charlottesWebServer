@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <pthread.h>
+
 #include "common.h"
 #include "cw_server.h"
 
@@ -118,7 +120,8 @@ build_http_free_header:
   return 0;
 }
 
-void *cw_handle_request(int sockfd) {
+void *cw_handle_request(void *sockfd_pointer) {
+  int sockfd = *((int *)sockfd_pointer);
   // TODO : put this stuff in a separate function
   struct sockaddr_in sock_addr;
   socklen_t sock_addr_len;
@@ -191,10 +194,11 @@ close_conn:
   close(sockfd);
 
   printf("------\n");
-  return NULL;
+  pthread_exit(NULL);
 }
 
-void *echo_handle_request(int sockfd) {
+void *echo_handle_request(void *sockfd_pointer) {
+  int sockfd = *((int *)sockfd_pointer);
   // TODO : put this stuff in a separate function
   struct sockaddr_in sock_addr;
   socklen_t sock_addr_len;
@@ -213,7 +217,7 @@ void *echo_handle_request(int sockfd) {
   if (num_bytes_received < 0) {
     perror("couldn't receive bytes from client\n");
     close(sockfd);
-    return NULL;
+    pthread_exit(NULL);
   }
   request_buffer[num_bytes_received] = '\0';
   if (write(sockfd, request_buffer, strlen(request_buffer)) < 0) {
@@ -223,5 +227,5 @@ void *echo_handle_request(int sockfd) {
   printf("------\n");
 
   close(sockfd);
-  return NULL;
+  pthread_exit(NULL);
 }

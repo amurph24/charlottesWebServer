@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <pthread.h>
+
 #include "common.h"
 #include "cw_server.h"
 #include "launcher.h"
@@ -80,7 +82,7 @@ int launch_server(int port) {
   printf("success! Listening on port %d...\n", port);
 
   // handlers for special ports
-  void *(*handle_request)(int sockfd);
+  void *(*handle_request)(void *sockfd_pointer);
   switch (port) {
   case 10007:
     handle_request = echo_handle_request;
@@ -94,6 +96,7 @@ int launch_server(int port) {
     socklen_t req_addr_len;
     req_addr_len = sizeof(req_sock_addr);
 
+    // TODO: I don't remember why this needs to be here
     fflush(stdout);
     conn_sock =
         accept(server_sock, (struct sockaddr *)&req_sock_addr, &req_addr_len);
@@ -102,7 +105,9 @@ int launch_server(int port) {
       continue;
     }
 
-    handle_request(conn_sock);
+    pthread_t thread;
+    pthread_create(&thread, NULL, handle_request, (void *)(&conn_sock));
+    pthread_detach(thread);
   }
   close(server_sock);
   return 0;
