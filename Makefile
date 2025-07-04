@@ -42,6 +42,8 @@ FORCE:
 clean:
 	-rm $(BUILDDIR)/*.o
 	-rm $(BUILDDIR)/$(EXE)
+	-rm $(BUILDDIR)/test_$(EXE)
+
 kill:
 	-pkill -f "./$(BUILDDIR)/$(EXE) 8000"
 	-pkill -f "./$(TESTDIR)/$(EXE) 8000"
